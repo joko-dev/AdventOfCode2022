@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AdventOfCode2021.SharedKernel
+namespace AdventOfCode2022.SharedKernel
 {
     public static class PuzzleConverter
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace AdventOfCode2021.SharedKernel
+namespace AdventOfCode2022.SharedKernel
 {
     public class PuzzleInput
     {
@@ -28,6 +28,8 @@ namespace AdventOfCode2021.SharedKernel
                     _lines.Add(line);
                 }
             }
+
+            file.Close();
         }
 
     }
