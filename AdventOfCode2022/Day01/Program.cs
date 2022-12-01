@@ -7,7 +7,6 @@ namespace AdventOfCode2022.Day01
         static void Main(string[] args)
         {
             
-
             Console.WriteLine(PuzzleOutputFormatter.getPuzzleCaption("Day 01: Calorie Counting"));
             Console.WriteLine("Calories: ");
             PuzzleInput puzzleInput = new PuzzleInput(PuzzleOutputFormatter.getPuzzleFilePath(), false);
@@ -15,6 +14,7 @@ namespace AdventOfCode2022.Day01
             List<int> elvesCalories = getElvesCalories(puzzleInput);
 
             Console.WriteLine("Max calories: {0}", elvesCalories.Max());
+            Console.WriteLine("Sum max 3 calories: {0}", elvesCalories.OrderDescending().Take(3).Sum());
         }
 
         static List<int> getElvesCalories(PuzzleInput puzzleInput)
