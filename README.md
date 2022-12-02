@@ -11,7 +11,7 @@ otherwise any custom file. The console will prompt the result for each subtask.
 
 ## Progression
 :star::star: [Day  1](/AdventOfCode2022/Day01) \
-:x::x: Day  2 \
+:star::star: [Day  2](/AdventOfCode2022/Day02) \
 :x::x: Day  3 \
 :x::x: Day  4 \
 :x::x: Day  5 \

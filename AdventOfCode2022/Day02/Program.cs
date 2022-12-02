@@ -5,7 +5,7 @@ namespace Day02
 {
     internal class Program
     {
-        enum Response
+        enum Shape
         {
             Rock, Paper, Scissor
         }
@@ -17,6 +17,7 @@ namespace Day02
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), false);
 
             Console.WriteLine("Score for guide: {0}", GetScore(puzzleInput));
+            Console.WriteLine("Score for ultra top secret guide: {0}", GetScoreTopSecret(puzzleInput));
         }
 
         private static int GetScore(PuzzleInput puzzleInput)
@@ -25,8 +26,8 @@ namespace Day02
 
             foreach(string line in puzzleInput.Lines) 
             {
-                Response opponent = GetResponse(line[0]);
-                Response self = GetResponse(line[2]);
+                Shape opponent = GetShape(line[0]);
+                Shape self = GetShape(line[2]);
 
                 score += GetResponseScore(self);
                 score += GetOutcomeScore(self, opponent);
@@ -35,7 +36,59 @@ namespace Day02
             return score;
         }
 
-        private static int GetOutcomeScore(Response self, Response opponent)
+        private static int GetScoreTopSecret(PuzzleInput puzzleInput)
+        {
+            int score = 0;
+
+            foreach (string line in puzzleInput.Lines)
+            {
+                Shape opponent = GetShape(line[0]);
+                Shape self = GetShapeForResult(opponent, line[2]);
+
+                score += GetResponseScore(self);
+                score += GetOutcomeScore(self, opponent);
+            }
+
+            return score;
+        }
+
+        private static Shape GetShapeForResult(Shape opponent, char result)
+        {
+            Shape self;
+
+            if(result == 'Y')
+            {
+                self = opponent;
+            }
+            else if (result == 'Z' )
+            {
+                self = opponent switch
+                {
+                    Shape.Rock => Shape.Paper,
+                    Shape.Paper => Shape.Scissor,
+                    Shape.Scissor => Shape.Rock,
+                    _ => throw new ArgumentOutOfRangeException(nameof(opponent))
+                };
+            }
+            else if (result == 'X')
+            {
+                self = opponent switch
+                {
+                    Shape.Rock => Shape.Scissor,
+                    Shape.Paper => Shape.Rock,
+                    Shape.Scissor => Shape.Paper,
+                    _ => throw new ArgumentOutOfRangeException(nameof(opponent))
+                };
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(result));
+            }
+
+            return self;
+        }
+
+        private static int GetOutcomeScore(Shape self, Shape opponent)
         {
             int score;
 
@@ -43,9 +96,9 @@ namespace Day02
             {
                 score = 3;
             }
-            else if((self == Response.Rock && opponent == Response.Scissor) 
-                    || (self == Response.Paper && opponent == Response.Rock)
-                    || (self == Response.Scissor && opponent == Response.Paper))
+            else if((self == Shape.Rock && opponent == Shape.Scissor) 
+                    || (self == Shape.Paper && opponent == Shape.Rock)
+                    || (self == Shape.Scissor && opponent == Shape.Paper))
             {
                 score = 6;
             }
@@ -57,32 +110,27 @@ namespace Day02
             return score;
         }
 
-        private static int GetResponseScore(Response self)
+        private static int GetResponseScore(Shape self)
         {
             int score = self switch
             {
-                Response.Rock => 1,
-                Response.Paper => 2,
-                Response.Scissor => 3,
+                Shape.Rock => 1,
+                Shape.Paper => 2,
+                Shape.Scissor => 3,
                 _ => throw new ArgumentOutOfRangeException(nameof(self)),
             };
             return score;
         }
 
-        private static Response GetResponse(char shape)
+        private static Shape GetShape(char shape)
         {
-            Response response;
-            switch (shape)
+            Shape response = shape switch
             {
-                case 'A':
-                case 'X': response = Response.Rock; break;
-                case 'B':
-                case 'Y': response = Response.Paper; break;
-                case 'C':
-                case 'Z': response = Response.Scissor; break;
-                default: throw new ArgumentOutOfRangeException(nameof(shape));
-            }
-
+                'A' or 'X' => Shape.Rock,
+                'B' or 'Y' => Shape.Paper,
+                'C' or 'Z' => Shape.Scissor,
+                _ => throw new ArgumentOutOfRangeException(nameof(shape)),
+            };
             return response;
         }
     }
