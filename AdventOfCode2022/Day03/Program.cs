@@ -11,12 +11,14 @@ namespace Day03
             Console.WriteLine("Rucksack content: ");
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), false);
 
-            List<char> priorityItemTypes = GetPrioritiyItemTyens(puzzleInput);
-            
-            Console.WriteLine("Score for guide: {0}", GetPrioritiesSum(priorityItemTypes));
+            List<char> priorityItemTypes = GetPrioritiyItemTypes(puzzleInput);
+            Console.WriteLine("Sum of priority items: {0}", GetPrioritiesSum(priorityItemTypes));
+
+            priorityItemTypes = GetCommonItemTypesForGroup(puzzleInput);
+            Console.WriteLine("Sum of priority items in group: {0}", GetPrioritiesSum(priorityItemTypes));
         }
 
-        private static List<char> GetPrioritiyItemTyens(PuzzleInput puzzleInput)
+        private static List<char> GetPrioritiyItemTypes(PuzzleInput puzzleInput)
         { 
             List<char> priorityItemTypes = new List<char>();
 
@@ -29,6 +31,25 @@ namespace Day03
                 foreach (char type in firstPart)
                 {
                     if (secondPart.Contains(type))
+                    {
+                        priorityItemTypes.Add(type);
+                        break;
+                    }
+                }
+            }
+
+            return priorityItemTypes;
+        }
+
+        private static List<char> GetCommonItemTypesForGroup(PuzzleInput puzzleInput)
+        {
+            List<char> priorityItemTypes = new List<char>();
+
+            for(int i = 0; i < puzzleInput.Lines.Count; i+=3)
+            {
+                foreach(char type in puzzleInput.Lines[i])
+                {
+                    if(puzzleInput.Lines[i+1].Contains(type) && puzzleInput.Lines[i + 2].Contains(type))
                     {
                         priorityItemTypes.Add(type);
                         break;
