@@ -29,9 +29,12 @@ namespace Day05
             List<List<char>> stacks = GetStacks(puzzleInput);
             List<Rearrangement> rearrangements = GetRearrangements(puzzleInput);
 
-            RearrangeStacks(stacks, rearrangements);
+            RearrangeStacks9000(stacks, rearrangements);
+            Console.WriteLine("Crates on top (CrateMover 9000): {0}", GetTopCrates(stacks));
 
-            Console.WriteLine("Crates on top: {0}", GetTopCrates(stacks));
+            stacks = GetStacks(puzzleInput);
+            RearrangeStacks9001(stacks, rearrangements);
+            Console.WriteLine("Crates on top (CrateMover 9001): {0}", GetTopCrates(stacks));
         }
 
         private static string GetTopCrates(List<List<char>> stacks)
@@ -45,7 +48,7 @@ namespace Day05
             return topCrates;
         }
 
-        private static void RearrangeStacks(List<List<char>> stacks, List<Rearrangement> rearrangements)
+        private static void RearrangeStacks9000(List<List<char>> stacks, List<Rearrangement> rearrangements)
         {
             foreach(Rearrangement rearrangement in rearrangements)
             {
@@ -56,6 +59,21 @@ namespace Day05
                     stacks[rearrangement.From - 1].RemoveAt(top);
                     stacks[rearrangement.To - 1].Add(crate);
                     
+                }
+            }
+        }
+
+        private static void RearrangeStacks9001(List<List<char>> stacks, List<Rearrangement> rearrangements)
+        {
+            foreach (Rearrangement rearrangement in rearrangements)
+            {
+                for (int i = rearrangement.Count; i >= 1; i--)
+                {
+                    int pos = stacks[rearrangement.From - 1].Count - i;
+                    char crate = stacks[rearrangement.From - 1][pos];
+                    stacks[rearrangement.From - 1].RemoveAt(pos);
+                    stacks[rearrangement.To - 1].Add(crate);
+
                 }
             }
         }
