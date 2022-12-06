@@ -11,6 +11,7 @@ namespace Day06
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), false);
 
             Console.WriteLine("Charactercount before start-of-packet marker: {0}", GetCharacterCount(puzzleInput.Lines[0], 4));
+            Console.WriteLine("Charactercount before start-of-message marker: {0}", GetCharacterCount(puzzleInput.Lines[0], 14));
         }
 
         private static int GetCharacterCount(string datastream, int markerLength)
