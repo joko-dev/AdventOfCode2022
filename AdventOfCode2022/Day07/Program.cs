@@ -1,5 +1,6 @@
 ﻿using AdventOfCode2022.SharedKernel;
 using System.Dynamic;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Day07
 {
@@ -56,7 +57,39 @@ namespace Day07
 
             FilesystemElement tree = buildFilesystemTree(puzzleInput);
 
+            // Solutions are a bit clunky because size of directories is calculated multiple times. But it works :P
             Console.WriteLine("Total size directories > 100000 size: {0}", GetTotalSize(tree, 100000));
+            Console.WriteLine("Smallest directory to delete: {0}", GetSmallestDirectoryToDelete(tree, 70000000, 30000000));
+        }
+
+        private static int GetSmallestDirectoryToDelete(FilesystemElement tree, int totalDískSpace, int neededDiskSpace)
+        {
+            int necessaryDirSizeToFree = neededDiskSpace - (totalDískSpace - tree.Size);
+            int smallestDirectory = tree.Size;
+
+            smallestDirectory = GetSmallestDirectory(tree, necessaryDirSizeToFree, smallestDirectory);
+
+            return smallestDirectory;
+        }
+
+        private static int GetSmallestDirectory(FilesystemElement directory, int necessaryDirSizeToFree, int currentSmallestDirectory)
+        {
+            int smallestDirectory = currentSmallestDirectory;
+
+            foreach (FilesystemElement element in directory.ChildElements)
+            {
+                if (element.Type == FilesystemType.Dir)
+                {
+                    int size = element.Size;
+                    if (size >= necessaryDirSizeToFree && size < smallestDirectory)
+                    {
+                        smallestDirectory = size;
+                    }
+                    smallestDirectory = GetSmallestDirectory(element, necessaryDirSizeToFree, smallestDirectory);
+                }
+            }
+
+            return smallestDirectory;
         }
 
         private static FilesystemElement buildFilesystemTree(PuzzleInput puzzleInput)
