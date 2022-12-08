@@ -1,4 +1,5 @@
 ﻿using AdventOfCode2022.SharedKernel;
+using System.Security;
 
 namespace Day08
 {
@@ -28,41 +29,112 @@ namespace Day08
             int[,] treeMap = PuzzleConverter.getInputAsMatrixInt(puzzleInput.Lines);
 
             Console.WriteLine("Count visible trees: {0}", GetCountVisibleTrees(treeMap));
+            Console.WriteLine("Highest scenic score: {0}", GetHighestScenicScore(treeMap));
+        }
+
+        private static int GetHighestScenicScore(int[,] treeMap)
+        {
+            int highestScore = 0;
+            
+            for(int y = 0; y < treeMap.GetLength(1); y++)
+            {
+                for (int x = 0; x < treeMap.GetLength(0); x++)
+                {
+                    int score = GetScenicScore(treeMap, x, y);
+                    if(score > highestScore)
+                    {
+                        highestScore = score;
+                    }
+                }
+            }
+
+            return highestScore;
+        }
+
+        private static int GetScenicScore(int[,] treeMap, int x, int y)
+        {
+            int score = 0;
+            
+            score = GetTreesUp(treeMap, x, y) * GetTreesDown(treeMap, x, y) * GetTreesRight(treeMap, x, y) * GetTreesLeft(treeMap, x, y);
+
+            return score;
+        }
+
+        private static int GetTreesUp(int[,] treeMap, int x, int y)
+        {
+            int currentHeight = treeMap[x,y];
+            int count = 0;
+
+            for (int newY = y - 1; newY >= 0; newY--)
+            {
+                count++;
+                if (treeMap[x, newY] >= currentHeight)
+                {
+                    break;
+                }
+            }
+
+            return count;
+        }
+        private static int GetTreesDown(int[,] treeMap, int x, int y)
+        {
+            int currentHeight = treeMap[x, y];
+            int count = 0;
+
+            for (int newY = y + 1; newY < treeMap.GetLength(1); newY++)
+            {
+                count++;
+                if (treeMap[x, newY] >= currentHeight)
+                {
+                    break;
+                }
+            }
+
+            return count;
+        }
+
+        private static int GetTreesLeft(int[,] treeMap, int x, int y)
+        {
+            int currentHeight = treeMap[x, y];
+            int count = 0;
+
+            for (int newX = x - 1; newX >= 0; newX--)
+            {
+                count++;
+                if (treeMap[newX, y] >= currentHeight)
+                {
+                    break;
+                }
+            }
+
+            return count;
+        }
+
+        private static int GetTreesRight(int[,] treeMap, int x, int y)
+        {
+            int currentHeight = treeMap[x, y];
+            int count = 0;
+
+            for (int newX = x + 1; newX < treeMap.GetLength(0); newX++)
+            {
+                count++;
+                if (treeMap[newX, y] >= currentHeight)
+                {
+                    break;
+                }
+            }
+
+            return count;
         }
 
         private static int GetCountVisibleTrees(int[,] treeMap)
         {
             List<Coordinate> visibleTrees = new List<Coordinate>();
 
-            Console.WriteLine("========");
             GetVisibleTreesLine(visibleTrees, treeMap);
-            Console.WriteLine("========");
             GetVisibleTreesColumn(visibleTrees, treeMap);
-            Console.WriteLine("========");
-            GetVisibleTreesBorder(visibleTrees, treeMap);
 
             return visibleTrees.Count;
-        }
-
-        private static void GetVisibleTreesBorder(List<Coordinate> visibleTrees, int[,] treeMap)
-        {
-            for (int y = 0; y < treeMap.GetLength(1); y++)
-            {
-                Coordinate tree = new Coordinate(0, y);
-                CheckAndAddTree(visibleTrees, tree);
-
-                tree = new Coordinate(treeMap.GetLength(0) - 1, y);
-                CheckAndAddTree(visibleTrees, tree);
-            }
-
-            for (int x = 0; x < treeMap.GetLength(0); x++)
-            {
-                Coordinate tree = new Coordinate(x, 0);
-                CheckAndAddTree(visibleTrees, tree);
-
-                tree = new Coordinate(x, treeMap.GetLength(1) - 1);
-                CheckAndAddTree(visibleTrees, tree);
-            }
         }
 
         private static void GetVisibleTreesColumn(List<Coordinate> visibleTrees, int[,] treeMap)
@@ -70,26 +142,27 @@ namespace Day08
             for (int x = 0; x < treeMap.GetLength(0); x++)
             {
                 int lastY = 0;
-                int highestTreeColumn = GetHighestTreeColumn(treeMap, x);
+                int lastHeight = -1;
                 for (int y = 0; y < treeMap.GetLength(1); y++)
                 {
-                    if (treeMap[x, y] == highestTreeColumn)
+                    if (treeMap[x, y] > lastHeight)
                     {
                         Coordinate tree = new Coordinate(x, y);
+                        
                         CheckAndAddTree(visibleTrees, tree);
                         lastY = y;
-                        break;
+                        lastHeight = treeMap[x, y];
                     }
                 }
 
+                lastHeight = -1;
                 for (int y = treeMap.GetLength(1) - 1; y > lastY; y--)
                 {
-                    if (treeMap[x, y] == highestTreeColumn)
+                    if (treeMap[x, y] > lastHeight)
                     {
                         Coordinate tree = new Coordinate(x, y);
                         CheckAndAddTree(visibleTrees, tree);
-
-                        break;
+                        lastHeight = treeMap[x, y];
                     }
                 }
             }
@@ -100,28 +173,27 @@ namespace Day08
             for (int y = 0; y < treeMap.GetLength(1); y++)
             {
                 int lastX = 0;
+                int lastHeight = -1;
 
-                int highestTreeLine = GetHighestTreeLine(treeMap, y);
                 for (int x = 0; x < treeMap.GetLength(0); x++)
                 {
-                    if (treeMap[x, y] == highestTreeLine)
+                    if (treeMap[x, y] > lastHeight)
                     {
                         Coordinate tree = new Coordinate(x, y);
                         CheckAndAddTree(visibleTrees, tree);
                         lastX = x;
-
-                        break;
+                        lastHeight = treeMap[x, y];
                     }
                 }
 
+                lastHeight = -1;
                 for (int x = treeMap.GetLength(0) - 1; x > lastX; x--)
                 {
-                    if (treeMap[x, y] == highestTreeLine)
+                    if (treeMap[x, y] > lastHeight)
                     {
                         Coordinate tree = new Coordinate(x, y);
                         CheckAndAddTree(visibleTrees, tree);
-
-                        break;
+                        lastHeight = treeMap[x, y];
                     }
                 }
             }
@@ -132,38 +204,8 @@ namespace Day08
             if (!visibleTrees.Any(t => t.Equals(tree)))
             {
                 visibleTrees.Add(tree);
-                Console.WriteLine("Tree: {0}, {1}", tree.X, tree.Y);
             }
         }
 
-        private static int GetHighestTreeLine(int[,] treeMap, int y)
-        {
-            int maxHeight = 0;
-
-            for (int x = 0; x < treeMap.GetLength(0); x++)
-            {
-                if (treeMap[x, y] > maxHeight)
-                {
-                    maxHeight = treeMap[x, y];
-                }
-            }
-
-            return maxHeight;
-        }
-
-        private static int GetHighestTreeColumn(int[,] treeMap, int x)
-        {
-            int maxHeight = 0;
-
-            for (int y = 0; y < treeMap.GetLength(1); y++)
-            {
-                if (treeMap[x, y] > maxHeight)
-                {
-                    maxHeight = treeMap[x, y];
-                }
-            }
-
-            return maxHeight;
-        }
     }
 }
