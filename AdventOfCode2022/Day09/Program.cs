@@ -78,46 +78,15 @@ namespace Day09
 
         private static void MoveTail(Coordinate head, Coordinate tail)
         {
-            int xToAdd = 0;
-            int yToAdd = 0;
-            int verticalDistance = head.Y - tail.Y;
-            int horizontalDistance = head.X - tail.X;
+            int dx = head.X - tail.X;
+            int dy = head.Y - tail.Y;
 
-            if (horizontalDistance > 1)
+            if (Math.Abs(dx) > 1 || Math.Abs(dy) > 1)
             {
-                xToAdd = 1;
-                if(verticalDistance != 0)
-                {
-                    yToAdd = head.Y - tail.Y;
-                }
-            }
-            else if(horizontalDistance < -1 )
-            {
-                xToAdd = -1;
-                if (verticalDistance != 0)
-                {
-                    yToAdd = head.Y - tail.Y;
-                }
+                tail.Move(Math.Sign(dx), Math.Sign(dy));
             }
 
-            if (verticalDistance > 1)
-            {
-                yToAdd = 1;
-                if (horizontalDistance != 0)
-                {
-                    xToAdd = head.X - tail.X;
-                }
-            }
-            else if (verticalDistance < -1) 
-            {
-                yToAdd = -1;
-                if (horizontalDistance != 0)
-                {
-                    xToAdd = head.X - tail.X;
-                }
-            }
-
-            tail.Move(xToAdd, yToAdd);
+            
         }
 
         private static void MoveHead(List<Coordinate> knots, char direction, int steps, List<Coordinate> visited)
