@@ -28,8 +28,25 @@ namespace AdventOfCode2022.SharedKernel
             Y = int.Parse(temp[1]);
         }
 
-        public int X { get; }
-        public int Y { get; }
+        public Coordinate(Coordinate coordinate) 
+        { 
+            this.X = coordinate.X;
+            this.Y = coordinate.Y;
+        }
+
+        public void Move(int xToMove, int yToMove)
+        {
+            X += xToMove;
+            Y += yToMove;
+        }
+
+        public bool Equals(Coordinate coordinate)
+        {
+            return (this.X == coordinate.X && this.Y == coordinate.Y);
+        }
+
+        public int X { get; private set; }
+        public int Y { get; private set; }
 
         public static explicit operator (int x, int y)(Coordinate obj)
         {
@@ -37,3 +54,4 @@ namespace AdventOfCode2022.SharedKernel
         }
     }
 }
+

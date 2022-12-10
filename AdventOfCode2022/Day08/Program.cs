@@ -3,20 +3,6 @@ using System.Security;
 
 namespace Day08
 {
-    public struct Coordinate
-    {
-        public int X { get;  }
-        public int Y { get;  }
-        public Coordinate(int x, int y)
-        {
-            this.X = x;
-            this.Y = y;
-        }
-        public bool Equals(Coordinate other)
-        {
-            return (this.X == other.X && this.Y == other.Y);
-        }
-    }
 
     internal class Program
     {
