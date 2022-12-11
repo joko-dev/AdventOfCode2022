@@ -1,40 +1,37 @@
 ﻿using AdventOfCode2022.SharedKernel;
-using System.Numerics;
-using System.Runtime.ExceptionServices;
-using System.Security.Cryptography;
 
 namespace Day11
 {
     internal class Monkey
     {
-        internal List<BigInteger> Items { get; }
+        internal List<Int64> Items { get; }
         internal String Operation { get; }
         internal int TestDivisibile { get; }
         internal int TestPositiveTo { get; }
         internal int TestNegativeTo { get; }
-        internal BigInteger Inspections { get; private set; }
+        internal Int64 Inspections { get; private set; }
         public Monkey(string items, string operation, string testDivisible, string testPositiveTo, string testNegativeTo)
         {
             Inspections = 0;
-            Items = new List<BigInteger>();
+            Items = new List<Int64>();
             items = items.Replace("Starting items:", "").Trim();
-            Items.AddRange(items.Split(',').Select(BigInteger.Parse));
+            Items.AddRange(items.Split(',').Select(Int64.Parse));
             Operation = operation.Replace("Operation: new = ", "").Trim();
             TestDivisibile = Int32.Parse(testDivisible.Replace("Test: divisible by ", "").Trim());
             TestPositiveTo = Int32.Parse(testPositiveTo.Replace("If true: throw to monkey", ""));
             TestNegativeTo = Int32.Parse(testNegativeTo.Replace("If false: throw to monkey", ""));
         }
-        public (int newMonkeyTo, BigInteger worryLevel) Inspect(int divideWorryLevelBy, int divisorLimit)
+        public (int newMonkeyTo, Int64 worryLevel) Inspect(int divideWorryLevelBy, int divisorLimit)
         {
             int newMonkeyTo = 0;
             bool testResult;
-            BigInteger worryLevel = Items[0];
+            Int64 worryLevel = Items[0];
 
             string[] worryLevelOperationCalculation = Operation.Split(" ");
             worryLevel = calculateNewWorryLevel(worryLevel, worryLevelOperationCalculation[0], worryLevelOperationCalculation[1], worryLevelOperationCalculation[2]);
             if(divideWorryLevelBy > 1)
             {
-                worryLevel = (BigInteger) Math.Floor((decimal)worryLevel / divideWorryLevelBy);
+                worryLevel = (int) Math.Floor((decimal)worryLevel / divideWorryLevelBy);
             }
 
             worryLevel %= divisorLimit;
@@ -55,11 +52,11 @@ namespace Day11
             return (newMonkeyTo, worryLevel);
         }
 
-        private BigInteger calculateNewWorryLevel(BigInteger oldWorryLevel, string left, string op, string right)
+        private Int64 calculateNewWorryLevel(Int64 oldWorryLevel, string left, string op, string right)
         {
-            BigInteger newWorryLevel = 0;
-            BigInteger leftSide = getWorryLevelCalculationValue(oldWorryLevel, left);
-            BigInteger rightSide = getWorryLevelCalculationValue(oldWorryLevel, right);
+            Int64 newWorryLevel = 0;
+            Int64 leftSide = getWorryLevelCalculationValue(oldWorryLevel, left);
+            Int64 rightSide = getWorryLevelCalculationValue(oldWorryLevel, right);
 
             if (op == "+")
             {
@@ -72,9 +69,9 @@ namespace Day11
 
             return newWorryLevel;
         }
-        private BigInteger getWorryLevelCalculationValue(BigInteger oldWorryLevel, string valueString)
+        private Int64 getWorryLevelCalculationValue(Int64 oldWorryLevel, string valueString)
         {
-            BigInteger value = 0;
+            Int64 value = 0;
 
             if(valueString == "old")
             {
@@ -82,7 +79,7 @@ namespace Day11
             }
             else
             {
-                value = BigInteger.Parse(valueString);
+                value = Int64.Parse(valueString);
             }
 
             return value;
@@ -128,9 +125,9 @@ namespace Day11
             
         }
 
-        private static BigInteger GetMonkeyBusiness(List<Monkey> monkeys, int turns, int divideWorryLevelsBy)
+        private static Int64 GetMonkeyBusiness(List<Monkey> monkeys, int turns, int divideWorryLevelsBy)
         {
-            BigInteger monkeyBusiness = 0;
+            Int64 monkeyBusiness = 0;
             var divisorLimit = monkeys.Aggregate(1, (c, m) => c * m.TestDivisibile);
 
 
@@ -140,17 +137,8 @@ namespace Day11
                 {
                     while(monkey.Items.Count > 0)
                     {
-                        (int newMonkeyTo, BigInteger worryLevel) inspectionResult = monkey.Inspect(divideWorryLevelsBy, divisorLimit);
+                        (int newMonkeyTo, Int64 worryLevel) inspectionResult = monkey.Inspect(divideWorryLevelsBy, divisorLimit);
                         monkeys[inspectionResult.newMonkeyTo].Items.Add(inspectionResult.worryLevel);
-                    }
-                }
-
-                if(i == 1 | i == 20 | i == 1000 | i == 2000)
-                {
-                    Console.WriteLine("========");
-                    foreach (Monkey monkey in monkeys)
-                    {
-                        Console.WriteLine(monkey.Inspections.ToString());
                     }
                 }
             }
