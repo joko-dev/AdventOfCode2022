@@ -26,33 +26,53 @@ namespace Day10
 
             foreach(string line in puzzleInput.Lines)
             {
-                int startCycle = currentCycle;
                 int startX = X;
+                int cyclesToAdd = 0;
 
                 if (line == "noop")
                 {
-                    currentCycle += 1; 
+                    cyclesToAdd = 1; 
                 }
                 else if (line.StartsWith("addx"))
                 {
                     X += Int32.Parse(line.Split(' ')[1]);
-                    currentCycle += 2;
+                    cyclesToAdd = 2;
                 }
                 else
                 {
                     throw new ArgumentOutOfRangeException(nameof(line));
                 }
 
-                if (cyclesForCalculation.Count > 0)
+                for(int c = 1; c <= cyclesToAdd; c++)
                 {
-                    if(startCycle < cyclesForCalculation[0] && currentCycle >= cyclesForCalculation[0])
+
+                    currentCycle++;
+                    int currentPixel = (currentCycle - 1) % 40;
+                    
+
+                    if (startX - 1 == currentPixel || startX == currentPixel || startX + 1 == currentPixel)
+                    {
+                        Console.Write("#");
+                    }
+                    else
+                    {
+                        Console.Write(".");
+                    }
+                        
+
+                    if (currentCycle > 0 && currentCycle % 40 == 0)
+                    {
+                        Console.Write("\n");
+                    }
+
+                    if (cyclesForCalculation.Count > 0 && currentCycle == cyclesForCalculation[0])
                     {
                         sum += cyclesForCalculation[0] * startX;
                         cyclesForCalculation.RemoveAt(0);
                     }
 
                 }
-
+                
             }
             return sum;
         }
