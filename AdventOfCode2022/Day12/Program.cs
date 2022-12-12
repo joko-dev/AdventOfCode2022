@@ -5,6 +5,7 @@ namespace Day12
 {
     internal class Program
     {
+        // Algorithm: Djkstra. Used implementation from last year, should be optimized since all distances are equal
         static void Main(string[] args)
         {
             Console.WriteLine(PuzzleOutputFormatter.getPuzzleCaption("Day 12: Hill Climbing Algorithm"));
@@ -13,20 +14,35 @@ namespace Day12
 
             char[,] map = PuzzleConverter.getInputAsMatrixChar(puzzleInput.Lines);
 
-            List<Coordinate> path = GetShortestPath(map);
-            Console.WriteLine("Fewest steps required: {0}", path.Count - 1);
+            List<Coordinate> path = GetShortestPath(map, 'S', 'E', true);
+            Console.WriteLine("Fewest steps required (Start = S): {0}", path.Count - 1);
+
+            path = GetShortestPath(map, 'E', 'a', false);
+            Console.WriteLine("Fewest steps required (Start = a): {0}", path.Count - 1);
         }
 
-        private static List<Coordinate> GetShortestPath(char[,] map)
+        private static List<Coordinate> GetShortestPath(char[,] map, char start, char end, bool wayUp)
         {
+            List<Coordinate> shortestPath = null;
             List<Coordinate> coordinates = getAllCoordinates(map);
-            Coordinate start = getCoordinate(map, coordinates, 'S');
-            Coordinate end = getCoordinate(map, coordinates, 'E');
+            Coordinate startPoint = getCoordinates(map, coordinates, start).First();
+            List<Coordinate> endPoints = getCoordinates(map, coordinates, end);
 
-            Dictionary<Coordinate, Coordinate> predecessors = Dijkstra(map, coordinates, start, end);
-            List<Coordinate> path = getShortestPath(end, predecessors);
+            Dictionary<Coordinate, Coordinate> predecessors = Dijkstra(map, coordinates, startPoint, null, wayUp);
 
-            return path;
+            foreach(Coordinate endPoint in endPoints)
+            {
+                if(wayUp || (endPoint.X == 0 || endPoint.X == map.GetLength(0) - 1 || endPoint.Y == 0 || endPoint.Y == map.GetLength(1) - 1))
+                {
+                    List<Coordinate> currentPath = getShortestPath(endPoint, predecessors);
+                    if (currentPath.Exists(p => p == startPoint) && currentPath.Exists(p => p == endPoint) && (shortestPath is null || currentPath.Count < shortestPath.Count))
+                    {
+                        shortestPath = currentPath;
+                    }
+                }
+            }
+
+            return shortestPath;
         }
 
         private static List<Coordinate> getAllCoordinates(char[,] map)
@@ -44,22 +60,23 @@ namespace Day12
             return coordinates;
         }
 
-        private static Coordinate getCoordinate(char[,] map, List<Coordinate> coordinates, char element)
+        private static List<Coordinate> getCoordinates(char[,] map, List<Coordinate> coordinates, char element)
         {
+            List<Coordinate> result = new List<Coordinate>();
             for (int x = 0; x < map.GetLength(0); x++)
             {
                 for (int y = 0; y < map.GetLength(1); y++)
                 {
                     if (map[x, y] == element)
                     {
-                        return coordinates.Find(c => c.X == x && c.Y == y);
+                        result.Add(coordinates.Find(c => c.X == x && c.Y == y));
                     }
                 }
             }
-            throw new ArithmeticException(nameof(map));
+            return result;
         }
 
-        static Dictionary<Coordinate, Coordinate> Dijkstra(char[,] map, List<Coordinate> ways, Coordinate start, Coordinate end)
+        static Dictionary<Coordinate, Coordinate> Dijkstra(char[,] map, List<Coordinate> ways, Coordinate start, Coordinate end, bool wayUp)
         {
             Dictionary<Coordinate, int> distance = new Dictionary<Coordinate, int>();
             Dictionary<Coordinate, Coordinate> predecessor = new Dictionary<Coordinate, Coordinate>();
@@ -74,12 +91,12 @@ namespace Day12
                 {
                     break;
                 }
-                List<Coordinate> adjacent = getAdjacentCoordinates(map, lowestDistance, coordinatesWithoutPath);
+                List<Coordinate> adjacent = getAdjacentCoordinates(map, lowestDistance, coordinatesWithoutPath, wayUp);
                 foreach (Coordinate adj in adjacent)
                 {
                     if (coordinatesWithoutPath.Exists(c => c == adj))
                     {
-                        distanceUpdate(map, lowestDistance, adj, distance, predecessor);
+                        distanceUpdate(lowestDistance, adj, distance, predecessor);
                     }
                 }
             }
@@ -99,7 +116,7 @@ namespace Day12
             return path;
         }
 
-        private static void distanceUpdate(char[,] map, Coordinate from, Coordinate to, Dictionary<Coordinate, int> distance, Dictionary<Coordinate, Coordinate> predecessor)
+        private static void distanceUpdate(Coordinate from, Coordinate to, Dictionary<Coordinate, int> distance, Dictionary<Coordinate, Coordinate> predecessor)
         {
             //distance from one point to another is always 1
             int alternative = distance[from] + 1;
@@ -111,14 +128,24 @@ namespace Day12
             }
         }
 
-        private static List<Coordinate> getAdjacentCoordinates(char[,] map, Coordinate coordinate, List<Coordinate> coordinates)
+        private static List<Coordinate> getAdjacentCoordinates(char[,] map, Coordinate coordinate, List<Coordinate> coordinates, bool upwards)
         {
             List<Coordinate> adjacent = new List<Coordinate>();
             List<(int x, int y)> points = PuzzleConverter.getAdjacentPoints(map, (coordinate.X, coordinate.Y), true, true, false);
 
             foreach ((int x, int y) point in points)
             {
-                if (GetElevation(map[point.x, point.y]) - 1 <= GetElevation(map[coordinate.X, coordinate.Y]))
+                bool wayOk = false;
+                if(upwards)
+                {
+                    wayOk = GetElevation(map[point.x, point.y]) - 1 <= GetElevation(map[coordinate.X, coordinate.Y]);
+                }
+                else
+                {
+                    wayOk = GetElevation(map[point.x, point.y]) >= GetElevation(map[coordinate.X, coordinate.Y]) - 1;
+                }
+
+                if (wayOk)
                 {
                     Coordinate adj = coordinates.Find(c => c.X == point.x && c.Y == point.y);
                     if (adj is not null)
