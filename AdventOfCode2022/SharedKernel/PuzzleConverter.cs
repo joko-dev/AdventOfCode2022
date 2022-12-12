@@ -25,6 +25,23 @@ namespace AdventOfCode2022.SharedKernel
             return matrix;
         }
 
+        public static char[,] getInputAsMatrixChar(List<string> lines)
+        {
+            int height = lines.Count();
+            int width = lines.OrderBy(s => s.Length).Last().Length;
+            char[,] matrix = new char[width, height];
+
+            for (int h = 0; h < height; h++)
+            {
+                for (int w = 0; w < width; w++)
+                {
+                    matrix[w, h] = lines[h][w];
+                }
+            }
+
+            return matrix;
+        }
+
         public static int[,] getInputCoordinateAsMatrix(List<string> lines, int coordinateValue, string separator)
         {
             List<(int x, int y)> coordinates = new List<(int x, int y)>();
@@ -48,7 +65,7 @@ namespace AdventOfCode2022.SharedKernel
             return matrix;
         }
 
-        public static List<(int x, int y)> getAdjacentPoints(int[,] matrix, (int x, int y) point, bool horizontal, bool vertical, bool diagonal)
+        public static List<(int x, int y)> getAdjacentPoints<T>(T[,] matrix, (int x, int y) point, bool horizontal, bool vertical, bool diagonal)
         {
             List<(int x, int y)> adjacent = new List<(int x, int y)>();
 
