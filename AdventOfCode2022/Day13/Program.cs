@@ -140,8 +140,17 @@ namespace Day13
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), true);
 
             List<PacketData> packetPairs = GetListPackets(puzzleInput.Lines);
-
             Console.WriteLine("Sum of pair-indizes in right order: {0}", GetSumOfPairsInRightOrder(packetPairs));
+
+            PacketData divider1 = new PacketData();
+            divider1.Packets.Add(new PacketData(2));
+            packetPairs.Add(divider1);
+            PacketData divider2 = new PacketData();
+            divider2.Packets.Add(new PacketData(6));
+            packetPairs.Add(divider2);
+
+            Console.WriteLine("Decoder key: {0}", GetDecoderKey(packetPairs, divider1, divider2));
+
         }
 
         private static List<PacketData> GetListPackets(List<string> lines)
@@ -233,6 +242,21 @@ namespace Day13
             }
 
             return result;
+        }
+
+        private static int GetDecoderKey(List<PacketData> packetPairs, PacketData divider1, PacketData divider2)
+        {
+            int decoderKey;
+            packetPairs.Sort();
+
+            foreach(PacketData packet in packetPairs)
+            {
+                Console.WriteLine(packet);
+            }
+
+            decoderKey = (packetPairs.FindIndex(p => p == divider1) + 1) * (packetPairs.FindIndex(p => p == divider2) + 1);
+
+            return decoderKey;
         }
     }
 }
