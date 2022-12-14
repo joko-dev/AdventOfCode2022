@@ -45,5 +45,19 @@ namespace AdventOfCode2022.SharedKernel
             return filePath;
         }
 
+        public static List<string> outputMap<T>(T[,] map)
+        {
+            List<string> output = new List<string>();
+            for (int y=0; y < map.GetLength(1); y++)
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (int x = 0; x < map.GetLength(0); x++)
+                {
+                    stringBuilder.Append(Convert.ToString(map[x, y]));
+                }
+                output.Add(stringBuilder.ToString());
+            }
+            return output;
+        }
     }
 }

@@ -42,6 +42,17 @@ namespace AdventOfCode2022.SharedKernel
             return matrix;
         }
 
+        public static void fillMatrix<T>(T[,] matrix, T value)
+        {
+            for(int x = 0; x < matrix.GetLength(0); x++)
+            {
+                for (int y = 0; y < matrix.GetLength(1); y++)
+                {
+                    matrix[x,y] = value;
+                }
+            }
+        }
+
         public static int[,] getInputCoordinateAsMatrix(List<string> lines, int coordinateValue, string separator)
         {
             List<(int x, int y)> coordinates = new List<(int x, int y)>();
