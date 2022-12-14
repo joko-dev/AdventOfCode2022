@@ -4,8 +4,14 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Day14
 {
+    
+
     internal class Program
     {
+        const char ROCK = '#';
+        const char SAND = 'o';
+        const char AIR = '.';
+
         static void Main(string[] args)
         {
             Console.WriteLine(PuzzleOutputFormatter.getPuzzleCaption("Day 14: Regolith Reservoir"));
@@ -13,9 +19,14 @@ namespace Day14
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), true);
 
             List<List<Coordinate>> structures = GetRockStructures(puzzleInput.Lines);
-            char[,] cave = CreateCave(structures);
+            char[,] cave = CreateCave(structures,false);
             PouringSandLoop(cave, new Coordinate(500, 0));
-            Console.WriteLine("Units of sand before abyss: {0}", CountElements(cave, '+'));
+            Console.WriteLine("Units of sand before abyss: {0}", CountElements(cave, SAND));
+
+            cave = CreateCave(structures,true);
+            PouringSandLoop(cave, new Coordinate(500, 0));
+            File.WriteAllLines("temp", PuzzleOutputFormatter.outputMap(cave));
+            Console.WriteLine("Units of sand before full rest: {0}", CountElements(cave, SAND));
         }
 
         private static int CountElements(char[,] cave, char element)
@@ -31,17 +42,25 @@ namespace Day14
             return count;
         }
 
-        private static char[,] CreateCave(List<List<Coordinate>> structures)
+        private static char[,] CreateCave(List<List<Coordinate>> structures, bool fillFloor)
         {
             // Hack: expand width, so that right fill is possible
-            int width = structures.Max(s => s.Max( x => x.X)) + 100;
-            int height = structures.Max(s => s.Max( y => y.Y)) + 2;
+            int width = structures.Max(s => s.Max( x => x.X)) * 2;
+            int height = structures.Max(s => s.Max( y => y.Y)) + 3;
 
             char[,] cave = new char[width, height];
-            PuzzleConverter.fillMatrix(cave, '.');
+            PuzzleConverter.fillMatrix(cave, AIR);
             foreach(List<Coordinate> structure in structures)
             {
                 FillCaveWithStructure(cave, structure);
+            }
+
+            if (fillFloor)
+            {
+                for(int x = 0; x < cave.GetLength(0); x++)
+                {
+                    cave[x,height - 1] = ROCK;
+                }
             }
 
             return cave;
@@ -59,14 +78,14 @@ namespace Day14
                 {
                     for (int x = Math.Min(from.X, to.X); x <= Math.Max(from.X, to.X); x++)
                     {
-                        cave[x, from.Y] = '#';
+                        cave[x, from.Y] = ROCK;
                     }
                 }
                 else if (from.Y != to.Y) 
                 {
                     for (int y = Math.Min(from.Y, to.Y); y <= Math.Max(from.Y, to.Y); y++)
                     {
-                        cave[from.X, y] = '#';
+                        cave[from.X, y] = ROCK;
                     }
                 }
                 else
@@ -114,19 +133,19 @@ namespace Day14
                 return false;
             }
             // move diagonally left 
-            else if (cave[restPoint.X - 1, restPoint.Y + 1] == '.')
+            else if (cave[restPoint.X - 1, restPoint.Y + 1] == AIR)
             {
                 return PouringSand(cave, new Coordinate(restPoint.X - 1, restPoint.Y + 1));
             }
             // move diagonally right
-            else if (cave[restPoint.X + 1, restPoint.Y + 1] == '.')
+            else if (cave[restPoint.X + 1, restPoint.Y + 1] == AIR)
             {
                 return PouringSand(cave, new Coordinate(restPoint.X + 1, restPoint.Y + 1));
             }
             // rest
             else
             {
-                cave[restPoint.X, restPoint.Y] = '+';
+                cave[restPoint.X, restPoint.Y] = SAND;
                 return true;
             }
 
@@ -135,14 +154,19 @@ namespace Day14
         private static Coordinate GetRestPoint(char[,] cave, Coordinate coordinate)
         {
             Coordinate restPoint = null;
-            for(int y = coordinate.Y + 1; y < cave.GetLength(1); y++)
+
+            if (cave[coordinate.X, coordinate.Y] == AIR)
             {
-                if (cave[coordinate.X, y] == '#' || cave[coordinate.X, y] == '+')
+                for (int y = coordinate.Y + 1; y < cave.GetLength(1); y++)
                 {
-                    restPoint = new Coordinate(coordinate.X, y - 1);
-                    break;
+                    if (cave[coordinate.X, y] == ROCK || cave[coordinate.X, y] == SAND)
+                    {
+                        restPoint = new Coordinate(coordinate.X, y - 1);
+                        break;
+                    }
                 }
             }
+
             return restPoint;
         }
     }
