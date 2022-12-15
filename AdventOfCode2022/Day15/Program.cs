@@ -11,9 +11,11 @@ namespace Day15
             Console.WriteLine("Sensors and beacons: ");
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), true);
 
+            Console.Write("y to check: ");
+            int yToCheck = Int32.Parse(Console.ReadLine());
             List<(Coordinate sensor, Coordinate beacon)> sensors = GetSensors(puzzleInput.Lines);
 
-            Console.WriteLine("Positions without beacons (y=10): {0}", CountPositionsWithoutBeacons(sensors, 10));
+            Console.WriteLine("Positions without beacons (y=10): {0}", CountPositionsWithoutBeacons(sensors, yToCheck));
         }
 
         private static int CountPositionsWithoutBeacons(List<(Coordinate sensor, Coordinate beacon)> sensors, int y)
@@ -27,16 +29,19 @@ namespace Day15
 
             for (int x = minX; x <= maxX; x++)
             {
-
+                bool found = false;
                 Coordinate possibleBeacon = new Coordinate(x, y);
-                (Coordinate sensor, Coordinate beacon) nearestSensor = GetNearestSensor(sensors, possibleBeacon);
 
-                if(ManhattanDistance(possibleBeacon, nearestSensor.sensor) <= ManhattanDistance(nearestSensor.sensor, nearestSensor.beacon))
+                foreach ((Coordinate sensor, Coordinate beacon) sensor in sensors)
                 {
-                    count++;
-                    Console.Write('#');
+                    if (!sensor.beacon.Equals(possibleBeacon) && ManhattanDistance(sensor.sensor, possibleBeacon) <= ManhattanDistance(sensor.sensor, sensor.beacon))
+                    {
+                        count++;
+                        found = true;
+                        break;
+                    }
                 }
-                else { Console.Write('.');  }
+
             }
 
             return count;
