@@ -8,6 +8,7 @@ namespace AdventOfCode2022.SharedKernel
 {
     public static class PuzzleConverter
     {
+        // Source: https://github.com/Bpendragon/AdventOfCodeCSharp/blob/9fd66db83f97b3ebce7739444e6d5f294c9a993a/AdventOfCode/Solutions/Utilities.cs#L184
         public static int[,] TrimArray(this int[,] originalArray, int rowToRemove, int columnToRemove)
         {
             int[,] result = new int[originalArray.GetLength(0) - 1, originalArray.GetLength(1) - 1];

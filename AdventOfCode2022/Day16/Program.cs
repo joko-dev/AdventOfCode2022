@@ -29,9 +29,11 @@ namespace Day16
 
 
             // Floyd Warshall Algorithm - idea from reddit
+            // Solution was mostly taken from: Source: https://github.com/Bpendragon/AdventOfCodeCSharp/blob/9fd66/AdventOfCode/Solutions/Year2022/Day16-Solution.cs
+            // had no really idea how to approach the task, after implemententing the given solution it was quite obvious
             List<Valve> valves = CreateValves(puzzleInput.Lines);
             int[,] distances = FloydWarshall(valves);
-            int[,] importantDists; //The important distances (that is dists between non-zero flow + AA)
+            int[,] importantDists; 
 
             List<Valve>  importantValves = valves.Where(v => v.Name == "AA" || v.FlowRate != 0).ToList();
             List<int> indices = new();
@@ -47,12 +49,22 @@ namespace Day16
 
             Dictionary<int, int> cache = new();
             VisitValve(importantValves, importantDists, 0, 30, 0, 0, cache);
+            Console.WriteLine("Most preasure to release: {0}", cache.Values.Max()) ;
 
-            int preasure = cache.Values.Max();
-            Console.WriteLine("Most preasure to release: {0}", preasure) ;
+            cache = new();
+            VisitValve(importantValves, importantDists, 0, 26, 0, 0, cache);
+            int curMax = 0;
+            foreach (var kvp1 in cache)
+            {
+                foreach (var kvp2 in cache)
+                {
+                    if ((kvp1.Key & kvp2.Key) != 0) continue; //Only care if valves for disjoint set, so human and elephant take completly different routes
+                    curMax = int.Max(curMax, kvp1.Value + kvp2.Value);
+                }
+            }
+            Console.WriteLine("Most preasure to release (help of elephant): {0}", curMax);
         }
 
-        // Source: https://github.com/Bpendragon/AdventOfCodeCSharp/blob/9fd66/AdventOfCode/Solutions/Year2022/Day16-Solution.cs
         private static void VisitValve(List<Valve> valves, int[,] distances, int node, int time, int state, int flow, Dictionary<int, int> cache)
         {
             cache[state] = int.Max(cache.GetValueOrDefault(state, 0), flow); //Are we at a better point with the current valves turned on than last time we were at this point? if so, update value
