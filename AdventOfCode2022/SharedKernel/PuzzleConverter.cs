@@ -9,9 +9,9 @@ namespace AdventOfCode2022.SharedKernel
     public static class PuzzleConverter
     {
         // Source: https://github.com/Bpendragon/AdventOfCodeCSharp/blob/9fd66db83f97b3ebce7739444e6d5f294c9a993a/AdventOfCode/Solutions/Utilities.cs#L184
-        public static int[,] TrimArray(this int[,] originalArray, int rowToRemove, int columnToRemove)
+        public static T[,] TrimArray<T>(this T[,] originalArray, int rowToRemove, int columnToRemove)
         {
-            int[,] result = new int[originalArray.GetLength(0) - 1, originalArray.GetLength(1) - 1];
+            T[,] result = new T[originalArray.GetLength(0) - 1, originalArray.GetLength(1) - 1];
 
             for (int i = 0, j = 0; i < originalArray.GetLength(0); i++)
             {
@@ -27,6 +27,20 @@ namespace AdventOfCode2022.SharedKernel
                     u++;
                 }
                 j++;
+            }
+
+            return result;
+        }
+        public static T[,] DeleteArrayRowsBeneath<T>(this T[,] originalArray, int rowToDeleteBeneath)
+        {
+            T[,] result = new T[originalArray.GetLength(0), originalArray.GetLength(1)];
+
+            for (int y = rowToDeleteBeneath; y < originalArray.GetLength(1); y++)
+            {
+                for(int x = 0; x < originalArray.GetLength(0); x++)
+                {
+                    result[x, y - rowToDeleteBeneath] = originalArray[x, y];
+                }
             }
 
             return result;
