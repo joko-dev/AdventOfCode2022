@@ -27,13 +27,16 @@ namespace Day17
             string jetPattern = puzzleInput.Lines[0];
             List<RockStructure> rocks = CreateRockStructures();
 
-            char[,] tower = SimulateRockTower(rocks, jetPattern, 2022);
-            Console.WriteLine("Max Height: {0}", GetMaxTowerHeight(tower));
+            char[,] tower = SimulateRockTower(rocks, jetPattern, 2022, out int maxHeight );
+            
+            Console.WriteLine("Max Height: {0}", maxHeight);
+
+            //Idea for part 2: Check after 10 steps or so wether the map can be shrinked --> possible, when line can be extracted. Save the cutted height
         }
 
-        private static char[,] SimulateRockTower(List<RockStructure> rocks, string jetPattern, int rockCount)
+        private static char[,] SimulateRockTower(List<RockStructure> rocks, string jetPattern, int rockCount, out int maxHeight)
         {
-            char[,] tower = new char[7, rocks.Max(r => r.Shape.Count() * rockCount)];
+            char[,] tower = new char[7, rocks.Max(r => r.Shape.Count() * 200)];
             PuzzleConverter.fillMatrix(tower, '.');
             int currentJetIndex = 0;
             for(int i = 1; i <= rockCount; i++)
@@ -78,15 +81,16 @@ namespace Day17
                     }
                 }
             }
-
+            maxHeight = GetMaxTowerHeight(tower);
             return tower;
         }
 
         private static bool MoveRockDown(char[,] tower)
         {
             bool bottomReached = false;
+            int maxHeight = GetMaxTowerHeight(tower) + 10;
 
-            for (int y = 0; y < tower.GetLength(1) && !bottomReached; y++)
+            for (int y = 0; y < maxHeight && !bottomReached; y++)
             {
                 for (int x = 0; x < tower.GetLength(0) && !bottomReached; x++)
                 {
@@ -107,7 +111,7 @@ namespace Day17
 
             if (!bottomReached)
             {
-                for (int y = 1; y < tower.GetLength(1); y++)
+                for (int y = 1; y < maxHeight; y++)
                 {
                     for (int x = 0; x < tower.GetLength(0); x++)
                     {
@@ -121,7 +125,7 @@ namespace Day17
             }
             else
             {
-                for (int y = 0; y < tower.GetLength(1); y++)
+                for (int y = 0; y < maxHeight; y++)
                 {
                     for (int x = 0; x < tower.GetLength(0); x++)
                     {
@@ -139,7 +143,8 @@ namespace Day17
         private static void MoveRockJetLeft(char[,] tower, char jet)
         {
             bool movementForbidden = false;
-            for (int y = 0; y < tower.GetLength(1) && !movementForbidden; y++)
+            int maxHeight = GetMaxTowerHeight(tower) + 10;
+            for (int y = 0; y < maxHeight && !movementForbidden; y++)
             {
                 for (int x = 0; x < tower.GetLength(0) && !movementForbidden; x++)
                 {
@@ -157,7 +162,7 @@ namespace Day17
             {
                 for (int x = 1; x < tower.GetLength(0); x++)
                 {
-                    for (int y = 0; y < tower.GetLength(1); y++)
+                    for (int y = 0; y < maxHeight; y++)
                     {
                         if (tower[x, y] == FALLING)
                         {
@@ -172,7 +177,8 @@ namespace Day17
         private static void MoveRockJetRight(char[,] tower, char jet)
         {
             bool movementForbidden = false;
-            for (int y = 0; y < tower.GetLength(1) && !movementForbidden; y++)
+            int maxHeight = GetMaxTowerHeight(tower) + 10;
+            for (int y = 0; y < maxHeight && !movementForbidden; y++)
             {
                 for (int x = 0; x < tower.GetLength(0) && !movementForbidden; x++)
                 {
@@ -188,7 +194,7 @@ namespace Day17
 
             if (!movementForbidden)
             {
-                for (int y = 0; y < tower.GetLength(1); y++)
+                for (int y = 0; y < maxHeight; y++)
                 {
                     for (int x = tower.GetLength(0) - 2; x >= 0; x--)
                     {
@@ -222,14 +228,19 @@ namespace Day17
 
         private static int GetMaxTowerHeight(char[,] tower)
         {
-            for (int y = tower.GetLength(1) - 1; y >= 0; y--)
+            for (int y = 0; y < tower.GetLength(1); y++)
             {
+                bool foundRock = false;
                 for(int x = 0; x < tower.GetLength(0); x++)
                 {
                     if (tower[x,y] == ROCK)
                     {
-                        return y+1;
+                        foundRock = true;
                     }
+                }
+                if (!foundRock)
+                {
+                    return y;
                 }
             }
             return 0;
