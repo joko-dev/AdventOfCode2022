@@ -28,15 +28,15 @@ namespace Day17
             List<RockStructure> rocks = CreateRockStructures();
 
             char[,] tower = SimulateRockTower(rocks, jetPattern, 2022, out int maxHeight );
-            
             Console.WriteLine("Max Height: {0}", maxHeight);
 
-            //Idea for part 2: Check after 10 steps or so wether the map can be shrinked --> possible, when line can be extracted. Save the cutted height
+            //Part 2:   there's no part were all elements in 1 row are rocks. I assume there must be some kind of loop, but currently
+            //          no idea how to determine. Some kind of "cache tower height for each step, check wether there is a pattern"
         }
 
         private static char[,] SimulateRockTower(List<RockStructure> rocks, string jetPattern, int rockCount, out int maxHeight)
         {
-            char[,] tower = new char[7, rocks.Max(r => r.Shape.Count() * 200)];
+            char[,] tower = new char[7, rocks.Max(r => r.Shape.Count() * rockCount)];
             PuzzleConverter.fillMatrix(tower, '.');
             int currentJetIndex = 0;
             for(int i = 1; i <= rockCount; i++)
