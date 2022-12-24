@@ -1,5 +1,6 @@
 ﻿using AdventOfCode2022.SharedKernel;
 using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Day20
 {
@@ -7,8 +8,8 @@ namespace Day20
     {
         class Element
         {
-            public int Value { get; }
-            public Element(int value)
+            public Int64 Value { get; set; }
+            public Element(Int64 value)
             {
                 Value = value;
             }
@@ -21,72 +22,38 @@ namespace Day20
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), true);
 
             List<Element> elements = GetFileElements(puzzleInput.Lines);
-            List<Element> rearragendElements = RearrageFileElements(elements);
+            List<Element> rearragendElements = RearrangeFileElements(elements, elements);
 
             Console.WriteLine("Sum of grove coordinates: {0}", GetElementAtPositionAfterZero(rearragendElements, 1000) + GetElementAtPositionAfterZero(rearragendElements, 2000) 
                                                                     + GetElementAtPositionAfterZero(rearragendElements, 3000));
+
+            foreach(Element element in elements) { element.Value *= 811589153; }
+            rearragendElements = elements;
+            for (int i = 1; i <= 10; i++)
+            {
+                rearragendElements = RearrangeFileElements(rearragendElements, elements);
+            }
+            Console.WriteLine("Sum of grove coordinates with decryption key: {0}", GetElementAtPositionAfterZero(rearragendElements, 1000) + GetElementAtPositionAfterZero(rearragendElements, 2000)
+                                                                    + GetElementAtPositionAfterZero(rearragendElements, 3000));
         }
 
-        private static List<Element> RearrageFileElements(List<Element> elements)
+        private static List<Element> RearrangeFileElements(List<Element> elementsToRearrange, List<Element> originalList)
         {
-            List<Element> rearrengedList = new List<Element>(elements);
+            List<Element> rearrengedList = new List<Element>(elementsToRearrange);
 
-            foreach (Element element in elements)
+            foreach (Element element in originalList)
             {
-                int oldPosition = rearrengedList.IndexOf(element);
-                int newPosition = GetNewPositionForElement(oldPosition, elements.Count, element.Value);
-                
-                if(newPosition > oldPosition)
-                {
-                    rearrengedList.Insert(newPosition + 1, element);
-                    rearrengedList.RemoveAt(oldPosition);
-                }
-                else
-                {
-                    rearrengedList.Insert(newPosition, element);
-                    rearrengedList.RemoveAt(oldPosition + 1);
-                }
-                
-                //foreach(Element r in rearrengedList)
-                //{
-                //    Console.Write(r.Value + ",");
-                //}
-                //Console.Write("\n");
+                Int64 oldIndex = rearrengedList.IndexOf(element);
+                Int64 newIndex = (oldIndex + element.Value) % (originalList.Count - 1);
+
+                if (newIndex < 0)
+                    newIndex = originalList.Count + newIndex - 1;
+
+                rearrengedList.Remove(element);
+                rearrengedList.Insert((int)newIndex, element);
             }
 
             return rearrengedList;
-        }
-
-        private static int GetNewPositionForElement(int oldPosition, int elementCount, int distance)
-        {
-            int newPosition = oldPosition;
-            if(distance > 0)
-            {
-                for(int step = 1; step <= distance; step++)
-                {
-                    newPosition++;
-                    if(newPosition == elementCount)
-                    {
-                        newPosition= 1;
-                    }
-                }
-            }
-            else if (distance < 0)
-            {
-                for (int step = 1; step <= Math.Abs(distance); step++)
-                {
-                    newPosition--;
-                    if (newPosition == 0)
-                    {
-                        newPosition = elementCount - 1;
-                    }
-                    else if (newPosition == -1)
-                    {
-                        newPosition = elementCount - 2;
-                    }
-                }
-            }
-            return newPosition;
         }
 
         private static List<Element> GetFileElements(List<string> lines)
@@ -101,7 +68,7 @@ namespace Day20
             return elements;
         }
 
-        private static int GetElementAtPositionAfterZero(List<Element> rearragendElements, int positionAfterZero)
+        private static Int64 GetElementAtPositionAfterZero(List<Element> rearragendElements, int positionAfterZero)
         {
             int index = rearragendElements.FindIndex(element => element.Value == 0);
             
