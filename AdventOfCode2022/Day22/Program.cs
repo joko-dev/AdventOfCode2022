@@ -26,11 +26,14 @@ namespace Day22
             char[,] map = PuzzleConverter.getInputAsMatrixChar(puzzleInput.Lines.Take(puzzleInput.Lines.Count - 1).ToList(), UNDEFINED);
             string instructions = puzzleInput.Lines.Last();
 
-            (Coordinate coordinate, Facing facing) endpoint = TravelMap(map, instructions);
+            (Coordinate coordinate, Facing facing) endpoint = TravelMap(map, instructions, false);
             Console.WriteLine("final password: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
+
+            endpoint = TravelMap(map, instructions, true);
+            Console.WriteLine("final password cube: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
         }
 
-        private static (Coordinate coordinate, Facing facing) TravelMap(char[,] map, string instructions)
+        private static (Coordinate coordinate, Facing facing) TravelMap(char[,] map, string instructions, bool cube)
         {
             (Coordinate coordinate, Facing facing) currentPoint = DetermineStartingPoint(map);
             
@@ -39,7 +42,7 @@ namespace Day22
                 string currentInstruction = StripInstruction(ref instructions);
                 if (Int32.TryParse(currentInstruction, out int steps))
                 {
-                    currentPoint = (Move(map, currentPoint, steps), currentPoint.facing);
+                    currentPoint = Move(map, currentPoint, steps, cube);
                 }
                 else
                 {
@@ -50,13 +53,13 @@ namespace Day22
             return currentPoint;
         }
 
-        private static Coordinate Move(char[,] map, (Coordinate coordinate, Facing facing) currentPosition, int steps)
+        private static (Coordinate coordinate, Facing facing) Move(char[,] map, (Coordinate coordinate, Facing facing) currentPosition, int steps, bool cube)
         {
-            Coordinate movingForward = new Coordinate(currentPosition.coordinate);
-            for(int i = 1; i <= steps; i++)
+            (Coordinate coordinate, Facing facing) movingForward = (new Coordinate(currentPosition.coordinate), currentPosition.facing);
+            for (int i = 1; i <= steps; i++)
             {
-                Coordinate nextCoordinate = DetermineNextCoordinateFacing(map, movingForward, currentPosition.facing);
-                if (map[nextCoordinate.X, nextCoordinate.Y] == WALL)
+                (Coordinate coordinate, Facing facing) nextCoordinate = DetermineNextCoordinateFacing(map, movingForward, cube);
+                if (map[nextCoordinate.coordinate.X, nextCoordinate.coordinate.Y] == WALL)
                 {
                     break;
                 }
@@ -68,93 +71,89 @@ namespace Day22
             return movingForward;
         }
 
-        private static Coordinate DetermineNextCoordinateFacing(char[,] map, Coordinate coordinate, Facing facing)
+        private static (Coordinate coordinate, Facing facing) DetermineNextCoordinateFacing(char[,] map, (Coordinate coordinate, Facing facing) move, bool cube)
         {
-            int x = -1; int y = -1;
+            (Coordinate coordinate, Facing facing) newPosition = (new Coordinate(move.coordinate), move.facing);
             int mapWidth = map.GetLength(0);
             int mapHeight = map.GetLength(1);
 
-            if (facing == Facing.Right)
+            if (move.facing == Facing.Right)
             {
-                x = coordinate.X + 1;
-                y = coordinate.Y;
-                if ( x >= mapWidth || map[x, y] == UNDEFINED)
+                newPosition.coordinate.Move(1,0);
+                if (newPosition.coordinate.X >= mapWidth || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    x = GetLeftX(map, y);
+                    newPosition = GetLeftX(map, newPosition);
                 }
             }
-            else if (facing == Facing.Left)
+            else if (move.facing == Facing.Left)
             {
-                x = coordinate.X - 1;
-                y = coordinate.Y;
-                if (x < 0 || map[x, y] == UNDEFINED)
+                newPosition.coordinate.Move(-1,0);
+                if (newPosition.coordinate.X < 0 || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    x = GetRightX(map, y);
+                    newPosition = GetRightX(map, newPosition);
                 }
             }
-            else if (facing == Facing.Up)
+            else if (move.facing == Facing.Up)
             {
-                x = coordinate.X;
-                y = coordinate.Y - 1;
-                if (y < 0 || map[x, y] == UNDEFINED)
+                newPosition.coordinate.Move(0,-1);
+                if (newPosition.coordinate.Y < 0 || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    y = GetLowerY(map, x);
+                    newPosition = GetLowerY(map, newPosition);
                 }
             }
-            else if (facing == Facing.Down)
+            else if (move.facing == Facing.Down)
             {
-                x = coordinate.X;
-                y = coordinate.Y + 1;
-                if (y >= mapHeight || map[x, y] == UNDEFINED)
+                newPosition.coordinate.Move(0,1);
+                if (newPosition.coordinate.Y >= mapHeight || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    y = GetUpperY(map, x);
+                    newPosition = GetUpperY(map, newPosition);
                 }
             }
 
-            return new Coordinate(x, y);
+            return newPosition;
         }
 
-        private static int GetLowerY(char[,] map, int x)
+        private static (Coordinate coordinate, Facing facing) GetLowerY(char[,] map, (Coordinate coordinate, Facing facing) position)
         {
             for (int y = map.GetLength(1) - 1; y >= 0; y--)
             {
-                if (map[x, y] != UNDEFINED)
+                if (map[position.coordinate.X, y] != UNDEFINED)
                 {
-                    return y;
+                    return (new Coordinate(position.coordinate.X, y), position.facing);
                 }
             }
             throw new Exception();
         }
-        private static int GetUpperY(char[,] map, int x)
+        private static (Coordinate coordinate, Facing facing) GetUpperY(char[,] map, (Coordinate coordinate, Facing facing) position)
         {
             for (int y = 0; y < map.GetLength(1); y++)
             {
-                if (map[x, y] != UNDEFINED)
+                if (map[position.coordinate.X, y] != UNDEFINED)
                 {
-                    return y;
+                    return (new Coordinate(position.coordinate.X, y), position.facing);
                 }
             }
             throw new Exception();
         }
 
-        private static int GetLeftX(char[,] map, int y)
+        private static (Coordinate coordinate, Facing facing) GetLeftX(char[,] map, (Coordinate coordinate, Facing facing) position)
         {
             for (int x = 0; x < map.GetLength(0); x++)
             {
-                if (map[x,y] != UNDEFINED)
+                if (map[x, position.coordinate.Y] != UNDEFINED)
                 {
-                    return x;
+                    return (new Coordinate(x, position.coordinate.Y), position.facing);
                 }
             }
             throw new Exception();
         }
-        private static int GetRightX(char[,] map, int y)
+        private static (Coordinate coordinate, Facing facing) GetRightX(char[,] map, (Coordinate coordinate, Facing facing) position)
         {
             for (int x = map.GetLength(0) - 1; x >= 0; x--)
             {
-                if (map[x, y] != UNDEFINED)
+                if (map[x, position.coordinate.Y] != UNDEFINED)
                 {
-                    return x;
+                    return (new Coordinate(x, position.coordinate.Y), position.facing);
                 }
             }
             throw new Exception();
