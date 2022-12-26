@@ -12,7 +12,7 @@ namespace Day12
             Console.WriteLine("Heightmap: ");
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), false);
 
-            char[,] map = PuzzleConverter.getInputAsMatrixChar(puzzleInput.Lines);
+            char[,] map = PuzzleConverter.getInputAsMatrixChar(puzzleInput.Lines, null);
 
             List<Coordinate> path = GetShortestPath(map, 'S', 'E', true);
             Console.WriteLine("Fewest steps required (Start = S): {0}", path.Count - 1);

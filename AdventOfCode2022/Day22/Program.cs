@@ -17,8 +17,15 @@ namespace Day22
             Right = 0, Down = 1, Left = 2, Up = 3
         }
 
+        static List<(Coordinate coordinate, Facing facing)> way = new List<(Coordinate coordinate, Facing facing)>();
+
         static void Main(string[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.SetCursorPosition(0, 0);
+            Console.SetBufferSize(250, 250);
+            Console.SetWindowSize(200, 50);
+
             Console.WriteLine(PuzzleOutputFormatter.getPuzzleCaption("Day 22: Monkey Map"));
             Console.WriteLine("Notes: ");
             PuzzleInput puzzleInput = new(PuzzleOutputFormatter.getPuzzleFilePath(), true);
@@ -28,9 +35,39 @@ namespace Day22
 
             (Coordinate coordinate, Facing facing) endpoint = TravelMap(map, instructions, false);
             Console.WriteLine("final password: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
-
+            Console.WriteLine("Second part only for the given puzzle input");
+            way.Clear();
             endpoint = TravelMap(map, instructions, true);
             Console.WriteLine("final password cube: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
+
+
+
+            for (int y = 0; y < map.GetLength(1); y++)
+            {
+                for (int x = 0; x < map.GetLength(0); x++)
+                {
+                    if (way.Exists(w => w.coordinate.X == x && w.coordinate.Y == y))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        (Coordinate coordinate, Facing facing) element = way.Find(w => w.coordinate.X == x && w.coordinate.Y == y);
+                        switch (element.facing)
+                        {
+                            case Facing.Left: Console.Write('<'); break;
+                            case Facing.Right: Console.Write('>'); break;
+                            case Facing.Up: Console.Write('^'); break;
+                            case Facing.Down: Console.Write('v'); break;
+                        }
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write(map[x, y]);
+                    }
+                }
+                Console.Write('\n');
+
+            }      
+                
         }
 
         private static (Coordinate coordinate, Facing facing) TravelMap(char[,] map, string instructions, bool cube)
@@ -66,6 +103,7 @@ namespace Day22
                 else
                 {
                     movingForward = nextCoordinate;
+                    way.Add(movingForward);
                 }
             }
             return movingForward;
@@ -82,7 +120,7 @@ namespace Day22
                 newPosition.coordinate.Move(1,0);
                 if (newPosition.coordinate.X >= mapWidth || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    newPosition = GetLeftX(map, newPosition);
+                    newPosition = MoveRightOutOfArea(map, newPosition, cube);
                 }
             }
             else if (move.facing == Facing.Left)
@@ -90,7 +128,7 @@ namespace Day22
                 newPosition.coordinate.Move(-1,0);
                 if (newPosition.coordinate.X < 0 || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    newPosition = GetRightX(map, newPosition);
+                    newPosition = MoveLeftOutOfArea(map, newPosition, cube);
                 }
             }
             else if (move.facing == Facing.Up)
@@ -98,7 +136,7 @@ namespace Day22
                 newPosition.coordinate.Move(0,-1);
                 if (newPosition.coordinate.Y < 0 || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    newPosition = GetLowerY(map, newPosition);
+                    newPosition = MoveUpOutOfArea(map, newPosition, cube);
                 }
             }
             else if (move.facing == Facing.Down)
@@ -106,54 +144,176 @@ namespace Day22
                 newPosition.coordinate.Move(0,1);
                 if (newPosition.coordinate.Y >= mapHeight || map[newPosition.coordinate.X, newPosition.coordinate.Y] == UNDEFINED)
                 {
-                    newPosition = GetUpperY(map, newPosition);
+                    newPosition = MoveDownOutOfArea(map, newPosition, cube);
                 }
             }
 
             return newPosition;
         }
 
-        private static (Coordinate coordinate, Facing facing) GetLowerY(char[,] map, (Coordinate coordinate, Facing facing) position)
+        private static (Coordinate coordinate, Facing facing) MoveUpOutOfArea(char[,] map, (Coordinate coordinate, Facing facing) position, bool cube)
         {
-            for (int y = map.GetLength(1) - 1; y >= 0; y--)
+            if (!cube)
             {
-                if (map[position.coordinate.X, y] != UNDEFINED)
+                for (int y = map.GetLength(1) - 1; y >= 0; y--)
                 {
-                    return (new Coordinate(position.coordinate.X, y), position.facing);
+                    if (map[position.coordinate.X, y] != UNDEFINED)
+                    {
+                        return (new Coordinate(position.coordinate.X, y), position.facing);
+                    }
                 }
             }
+            else
+            {
+                int subMapHeight = 50;
+                int subMapX = position.coordinate.X % subMapHeight;
+                int subMapLevel = position.coordinate.X / subMapHeight;
+                if (subMapLevel == 0)
+                {
+                    Coordinate coordinate = new Coordinate(subMapHeight, 1 * subMapHeight + subMapX);
+                    Facing facing = Facing.Right;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 1)
+                {
+                    Coordinate coordinate = new Coordinate(0, 3 * subMapHeight + subMapX);
+                    Facing facing = Facing.Right;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 2)
+                {
+                    Coordinate coordinate = new Coordinate(subMapX, 4 * subMapHeight - 1);
+                    Facing facing = Facing.Up;
+                    return (coordinate, facing);
+                }
+            }
+            
             throw new Exception();
         }
-        private static (Coordinate coordinate, Facing facing) GetUpperY(char[,] map, (Coordinate coordinate, Facing facing) position)
+        private static (Coordinate coordinate, Facing facing) MoveDownOutOfArea(char[,] map, (Coordinate coordinate, Facing facing) position, bool cube)
         {
-            for (int y = 0; y < map.GetLength(1); y++)
+            if (!cube)
             {
-                if (map[position.coordinate.X, y] != UNDEFINED)
+                for (int y = 0; y < map.GetLength(1); y++)
                 {
-                    return (new Coordinate(position.coordinate.X, y), position.facing);
+                    if (map[position.coordinate.X, y] != UNDEFINED)
+                    {
+                        return (new Coordinate(position.coordinate.X, y), position.facing);
+                    }
                 }
             }
+            else
+            {
+                int subMapHeight = 50;
+                int subMapX = position.coordinate.X % subMapHeight;
+                int subMapLevel = position.coordinate.X / subMapHeight;
+                if (subMapLevel == 0)
+                {
+                    Coordinate coordinate = new Coordinate(2 * subMapHeight + subMapX, 0);
+                    Facing facing = Facing.Down;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 1)
+                {
+                    Coordinate coordinate = new Coordinate(1 * subMapHeight - 1, 3 * subMapHeight + subMapX);
+                    Facing facing = Facing.Left;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 2)
+                {
+                    Coordinate coordinate = new Coordinate(2 * subMapHeight - 1, 1 * subMapHeight + subMapX);
+                    Facing facing = Facing.Left;
+                    return (coordinate, facing);
+                }
+            }
+   
             throw new Exception();
         }
 
-        private static (Coordinate coordinate, Facing facing) GetLeftX(char[,] map, (Coordinate coordinate, Facing facing) position)
+        private static (Coordinate coordinate, Facing facing) MoveRightOutOfArea(char[,] map, (Coordinate coordinate, Facing facing) position, bool cube)
         {
-            for (int x = 0; x < map.GetLength(0); x++)
+            if (!cube)
             {
-                if (map[x, position.coordinate.Y] != UNDEFINED)
+                for (int x = 0; x < map.GetLength(0); x++)
                 {
-                    return (new Coordinate(x, position.coordinate.Y), position.facing);
+                    if (map[x, position.coordinate.Y] != UNDEFINED)
+                    {
+                        return (new Coordinate(x, position.coordinate.Y), position.facing);
+                    }
+                }
+            }
+            else
+            {
+                int subMapHeight = 50;
+                int subMapY = position.coordinate.Y % subMapHeight;
+                int subMapLevel = position.coordinate.Y / subMapHeight;
+                if (subMapLevel == 0)
+                {
+                    Coordinate coordinate = new Coordinate(2 * subMapHeight - 1, 3 * subMapHeight - (subMapY % subMapHeight) - 1);
+                    Facing facing = Facing.Left;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 1)
+                {
+                    Coordinate coordinate = new Coordinate(2 * subMapHeight + subMapY, subMapHeight - 1);
+                    Facing facing = Facing.Up;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 2)
+                {
+                    Coordinate coordinate = new Coordinate(3 * subMapHeight - 1, 1 * subMapHeight - subMapY  - 1);
+                    Facing facing = Facing.Left;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 3)
+                {
+                    Coordinate coordinate = new Coordinate(1 * subMapHeight + subMapY, 3 * subMapHeight - 1);
+                    Facing facing = Facing.Up;
+                    return (coordinate, facing);
                 }
             }
             throw new Exception();
         }
-        private static (Coordinate coordinate, Facing facing) GetRightX(char[,] map, (Coordinate coordinate, Facing facing) position)
+        private static (Coordinate coordinate, Facing facing) MoveLeftOutOfArea(char[,] map, (Coordinate coordinate, Facing facing) position, bool cube)
         {
-            for (int x = map.GetLength(0) - 1; x >= 0; x--)
+            if (!cube)
             {
-                if (map[x, position.coordinate.Y] != UNDEFINED)
+                for (int x = map.GetLength(0) - 1; x >= 0; x--)
                 {
-                    return (new Coordinate(x, position.coordinate.Y), position.facing);
+                    if (map[x, position.coordinate.Y] != UNDEFINED)
+                    {
+                        return (new Coordinate(x, position.coordinate.Y), position.facing);
+                    }
+                }
+            }
+            else
+            {
+                int subMapHeight = 50;
+                int subMapY = position.coordinate.Y % subMapHeight;
+                int subMapLevel = position.coordinate.Y / subMapHeight;
+                if (subMapLevel == 0)
+                {
+                    Coordinate coordinate = new Coordinate(0, 3 * subMapHeight - (subMapY % subMapHeight) - 1);
+                    Facing facing = Facing.Right;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 1)
+                {
+                    Coordinate coordinate = new Coordinate(subMapY, 2 * subMapHeight);
+                    Facing facing = Facing.Down;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 2)
+                {
+                    Coordinate coordinate = new Coordinate(subMapHeight, 1 * subMapHeight - subMapY - 1);
+                    Facing facing = Facing.Right;
+                    return (coordinate, facing);
+                }
+                else if (subMapLevel == 3)
+                {
+                    Coordinate coordinate = new Coordinate(1 * subMapHeight + subMapY, 0);
+                    Facing facing = Facing.Down;
+                    return (coordinate, facing);
                 }
             }
             throw new Exception();
