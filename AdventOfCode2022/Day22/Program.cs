@@ -33,14 +33,28 @@ namespace Day22
             char[,] map = PuzzleConverter.getInputAsMatrixChar(puzzleInput.Lines.Take(puzzleInput.Lines.Count - 1).ToList(), UNDEFINED);
             string instructions = puzzleInput.Lines.Last();
 
-            (Coordinate coordinate, Facing facing) endpoint = TravelMap(map, instructions, false);
+            (Coordinate coordinate, Facing facing) endpoint = TravelMap(map, DetermineStartingPoint(map), instructions, false);
             Console.WriteLine("final password: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
             Console.WriteLine("Second part only for the given puzzle input");
-            way.Clear();
-            endpoint = TravelMap(map, instructions, true);
+            endpoint = TravelMap(map, DetermineStartingPoint(map), instructions, true);
             Console.WriteLine("final password cube: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
 
-
+            way.Clear();
+            //TravelMapDebug(map, (new Coordinate(53,0), Facing.Left), "5");
+            //TravelMapDebug(map, (new Coordinate(50,3), Facing.Up), "5");
+            //TravelMapDebug(map, (new Coordinate(100,3), Facing.Up), "5");
+            //TravelMapDebug(map, (new Coordinate(147, 0), Facing.Right), "5");
+            //TravelMapDebug(map, (new Coordinate(100, 47), Facing.Down), "5");
+            //TravelMapDebug(map, (new Coordinate(97, 50), Facing.Right), "5");
+            //TravelMapDebug(map, (new Coordinate(97, 100), Facing.Right), "5");
+            //TravelMapDebug(map, (new Coordinate(50, 147), Facing.Down), "5");
+            //TravelMapDebug(map, (new Coordinate(47, 150), Facing.Right), "5");
+            //TravelMapDebug(map, (new Coordinate(0, 197), Facing.Down), "5");
+            //TravelMapDebug(map, (new Coordinate(3, 150), Facing.Left), "5");
+            //TravelMapDebug(map, (new Coordinate(3, 100), Facing.Left), "5");
+            //TravelMapDebug(map, (new Coordinate(0, 103), Facing.Up), "5");
+            //TravelMapDebug(map, (new Coordinate(53, 50), Facing.Left), "5");
+            //TravelMapDebug(map, (new Coordinate(53, 0), Facing.Left), "5");
 
             for (int y = 0; y < map.GetLength(1); y++)
             {
@@ -70,9 +84,27 @@ namespace Day22
                 
         }
 
-        private static (Coordinate coordinate, Facing facing) TravelMap(char[,] map, string instructions, bool cube)
+        private static void TravelMapDebug(char[,] map, (Coordinate c, Facing d) pos, string instruction)
         {
-            (Coordinate coordinate, Facing facing) currentPoint = DetermineStartingPoint(map);
+            if(pos.d == Facing.Right || pos.d == Facing.Left)
+            {
+                for(int y = 0; y <= 25; y++)
+                {
+                    TravelMap(map, (new Coordinate(pos.c.X, pos.c.Y + y), pos.d), instruction, true);
+                }
+            }
+            else 
+            {
+                for (int x = 0; x <= 25; x++)
+                {
+                    TravelMap(map, (new Coordinate(pos.c.X + x, pos.c.Y), pos.d), instruction, true);
+                }
+            }
+        }
+
+        private static (Coordinate coordinate, Facing facing) TravelMap(char[,] map, (Coordinate coordinate, Facing facing) startingPoint, string instructions, bool cube)
+        {
+            (Coordinate coordinate, Facing facing) currentPoint = startingPoint;
             
             while(instructions.Length > 0)
             {
@@ -249,7 +281,7 @@ namespace Day22
                 int subMapLevel = position.coordinate.Y / subMapHeight;
                 if (subMapLevel == 0)
                 {
-                    Coordinate coordinate = new Coordinate(2 * subMapHeight - 1, 3 * subMapHeight - (subMapY % subMapHeight) - 1);
+                    Coordinate coordinate = new Coordinate(2 * subMapHeight - 1, 3 * subMapHeight - subMapY  - 1);
                     Facing facing = Facing.Left;
                     return (coordinate, facing);
                 }
@@ -293,7 +325,7 @@ namespace Day22
                 int subMapLevel = position.coordinate.Y / subMapHeight;
                 if (subMapLevel == 0)
                 {
-                    Coordinate coordinate = new Coordinate(0, 3 * subMapHeight - (subMapY % subMapHeight) - 1);
+                    Coordinate coordinate = new Coordinate(0, 3 * subMapHeight - subMapY - 1);
                     Facing facing = Facing.Right;
                     return (coordinate, facing);
                 }
