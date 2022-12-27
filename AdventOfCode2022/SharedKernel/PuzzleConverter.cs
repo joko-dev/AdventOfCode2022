@@ -62,7 +62,7 @@ namespace AdventOfCode2022.SharedKernel
             return matrix;
         }
 
-        public static char[,] getInputAsMatrixChar(List<string> lines)
+        public static char[,] getInputAsMatrixChar(List<string> lines, char? charToFill)
         {
             int height = lines.Count();
             int width = lines.OrderBy(s => s.Length).Last().Length;
@@ -72,7 +72,14 @@ namespace AdventOfCode2022.SharedKernel
             {
                 for (int w = 0; w < width; w++)
                 {
-                    matrix[w, h] = lines[h][w];
+                    if(w >= lines[h].Length && charToFill.HasValue)
+                    {
+                        matrix[w, h] = charToFill.Value;
+                    }
+                    else
+                    {
+                        matrix[w, h] = lines[h][w];
+                    }
                 }
             }
 
