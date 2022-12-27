@@ -36,10 +36,11 @@ namespace Day22
             (Coordinate coordinate, Facing facing) endpoint = TravelMap(map, DetermineStartingPoint(map), instructions, false);
             Console.WriteLine("final password: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
             Console.WriteLine("Second part only for the given puzzle input");
+            way.Clear();
             endpoint = TravelMap(map, DetermineStartingPoint(map), instructions, true);
             Console.WriteLine("final password cube: {0}", 1000 * (endpoint.coordinate.Y + 1) + 4 * (endpoint.coordinate.X + 1) + endpoint.facing);
 
-            way.Clear();
+            
             //TravelMapDebug(map, (new Coordinate(53,0), Facing.Left), "5");
             //TravelMapDebug(map, (new Coordinate(50,3), Facing.Up), "5");
             //TravelMapDebug(map, (new Coordinate(100,3), Facing.Up), "5");
