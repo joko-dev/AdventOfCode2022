@@ -40,9 +40,29 @@ namespace AdventOfCode2022.SharedKernel
             Y += yToMove;
         }
 
+        public void Move(Coordinate toMove)
+        {
+            Move(toMove.X, toMove.Y);
+        }
+
         public bool Equals(Coordinate coordinate)
         {
             return (this.X == coordinate.X && this.Y == coordinate.Y);
+        }
+
+        public List<Coordinate> GetAdjacentCoordinates()
+        {
+            List<Coordinate> adjacent = new List<Coordinate>();
+            adjacent.Add(new Coordinate(this.X - 1, Y - 1));
+            adjacent.Add(new Coordinate(this.X, Y - 1));
+            adjacent.Add(new Coordinate(this.X + 1, Y - 1));
+            adjacent.Add(new Coordinate(this.X - 1, Y));
+            adjacent.Add(new Coordinate(this.X + 1, Y));
+            adjacent.Add(new Coordinate(this.X - 1, Y + 1));
+            adjacent.Add(new Coordinate(this.X, Y + 1));
+            adjacent.Add(new Coordinate(this.X + 1, Y + 1));
+
+            return adjacent;
         }
 
         public int X { get; private set; }
